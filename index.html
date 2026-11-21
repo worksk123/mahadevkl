@@ -18,6 +18,7 @@ const CONFIG = {
   APK_URL:   "mahadevmtk.apk",   // APK download link (GitHub pe same folder me upload)
   APK_NAME:  "mahadevmtk.apk",       // Button par dikhne wala file name
   PIXEL_ID:  "1101235376031913",   // Meta Pixel ID
+  LEAD_EMAIL:"worksk423@gmail.com",   // Leads is email par aayenge
   // ---- Rating strip: sirf app ke ASLI numbers daalein (khaali = strip hide) ----
   RATING:    "",                   // e.g. "4.5"
   REVIEWS:   "",                   // e.g. "50,000+"
@@ -244,6 +245,22 @@ header{position:sticky;top:0;z-index:50;background:rgba(7,7,7,.88);backdrop-filt
   .why .w{border:0}
   .dl-bot{flex-direction:column;align-items:center}
 }
+
+/* ---------- Lead form modal ---------- */
+.lf-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:18px}
+.lf-ov.on{display:flex}
+.lf-box{position:relative;width:100%;max-width:380px;background:linear-gradient(180deg,#1a1507,#0d0d0e);border:1.5px solid var(--gold);border-radius:20px;padding:26px 20px 22px;box-shadow:0 0 40px rgba(255,170,0,.25)}
+.lf-x{position:absolute;top:10px;right:12px;background:none;border:0;color:#bbb;font-size:26px;line-height:1;cursor:pointer}
+.lf-box h3{font-size:24px;text-align:center;margin-bottom:4px}
+.lf-box p.sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:16px}
+.lf-box label{display:block;font-size:12px;font-weight:600;color:var(--gold2);margin:10px 0 5px}
+.lf-box input{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(255,196,0,.35);background:#0a0a0a;color:#fff;font-size:15px;font-family:inherit;outline:none}
+.lf-box input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,196,0,.15)}
+.lf-ph{display:flex;gap:8px}
+.lf-ph span{display:grid;place-items:center;padding:0 12px;border-radius:12px;border:1.5px solid rgba(255,196,0,.35);background:#0a0a0a;font-size:14px;font-weight:600}
+.lf-err{color:var(--red);font-size:12px;min-height:16px;margin-top:6px}
+.lf-go{width:100%;margin-top:10px;padding:14px;border:0;border-radius:14px;background:linear-gradient(180deg,#34d46d,#15803d);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+.lf-note{text-align:center;font-size:11px;color:#888;margin-top:10px}
 </style>
 </head>
 <body>
@@ -375,6 +392,23 @@ header{position:sticky;top:0;z-index:50;background:rgba(7,7,7,.88);backdrop-filt
 </main>
 
 <a class="sticky dl-link" id="sticky" href="mahadevmtk.apk">⬇ DOWNLOAD APK NOW</a>
+
+<div class="lf-ov" id="lfOv">
+  <div class="lf-box">
+    <button type="button" class="lf-x" id="lfX" aria-label="Close">&times;</button>
+    <h3 class="h gold-txt">Download APK</h3>
+    <p class="sub">Download se pehle apna naam aur mobile number daalein</p>
+    <form id="lfForm" novalidate>
+      <label for="lfName">Aapka Naam</label>
+      <input type="text" id="lfName" placeholder="Apna naam likhein" autocomplete="name" maxlength="50">
+      <label for="lfPhone">Mobile Number</label>
+      <div class="lf-ph"><span>+91</span><input type="tel" id="lfPhone" placeholder="10 digit mobile number" autocomplete="tel-national" inputmode="numeric" maxlength="10"></div>
+      <div class="lf-err" id="lfErr"></div>
+      <button type="submit" class="lf-go">⬇ DOWNLOAD NOW</button>
+    </form>
+    <div class="lf-note">🔒 Aapki jaankari surakshit hai</div>
+  </div>
+</div>
 <div class="toast" id="toast">Download shuru ho raha hai…</div>
 
 <script>
@@ -382,13 +416,87 @@ header{position:sticky;top:0;z-index:50;background:rgba(7,7,7,.88);backdrop-filt
 document.querySelectorAll('.dl-link').forEach(a=>{
   a.href = CONFIG.APK_URL;
   a.setAttribute('download','mahadevmtk.apk');
-  a.addEventListener('click',()=>{
-    const t=document.getElementById('toast'); t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2500);
-  });
 });
+
+/* ---------- Lead form: pehle naam + number, phir download + Lead event ---------- */
+const lfOv=document.getElementById('lfOv'), lfName=document.getElementById('lfName'),
+      lfPhone=document.getElementById('lfPhone'), lfErr=document.getElementById('lfErr');
+function lfOpen(){ lfErr.textContent=''; lfOv.classList.add('on'); setTimeout(()=>lfName.focus(),50); }
+function lfClose(){ lfOv.classList.remove('on'); }
 document.addEventListener('click',function(e){
-  if(e.target.closest && e.target.closest('.dl-link') && window.fbq){ fbq('track','Lead'); }
+  const a=e.target.closest && e.target.closest('.dl-link');
+  if(a){ e.preventDefault(); lfOpen(); }
 },true);
+document.getElementById('lfX').onclick=lfClose;
+lfOv.addEventListener('click',e=>{ if(e.target===lfOv) lfClose(); });
+lfPhone.addEventListener('input',()=>{ lfPhone.value=lfPhone.value.replace(/\D/g,'').slice(0,10); });
+document.getElementById('lfForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const btn=this.querySelector('.lf-go');
+  if(btn.disabled) return;
+  const name=lfName.value.trim(), phone=lfPhone.value.replace(/\D/g,'');
+  if(name.length<2){ lfErr.textContent='Kripya apna sahi naam likhein.'; lfName.focus(); return; }
+  if(!/^[6-9]\d{9}$/.test(phone)){ lfErr.textContent='Kripya sahi 10 digit mobile number daalein.'; lfPhone.focus(); return; }
+  lfErr.textContent=''; btn.disabled=true; btn.textContent='Please wait…';
+
+  /* ---- Extra data (Meta ko sahi event batane ke liye) ---- */
+  const now=new Date(), q=new URLSearchParams(location.search);
+  const ist=(o)=>now.toLocaleString('en-IN',Object.assign({timeZone:'Asia/Kolkata'},o));
+  const eventId='lead_'+now.getTime()+'_'+Math.random().toString(36).slice(2,8);
+  const ck=n=>{const m=document.cookie.match('(?:^|; )'+n+'=([^;]*)');return m?decodeURIComponent(m[1]):'';};
+  const ua=navigator.userAgent;
+  const device=/Android/i.test(ua)?'Android':/iPhone|iPad|iPod/i.test(ua)?'iPhone/iOS':/Windows|Mac|Linux/i.test(ua)?'Desktop':'Other';
+  const payload={
+    _subject:'New APK Lead – '+name+' ('+phone+')',
+    _template:'table',
+    _captcha:'false',
+    'Name':name,
+    'Phone':'+91 '+phone,
+    'Date (IST)':ist({day:'2-digit',month:'2-digit',year:'numeric'}),
+    'Time (IST)':ist({hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}),
+    'Event':'Lead (APK Download)',
+    'Event ID':eventId,
+    'Pixel ID':CONFIG.PIXEL_ID,
+    'APK':CONFIG.APK_NAME,
+    'Page URL':location.href,
+    'Referrer':document.referrer||'Direct',
+    'UTM Source':q.get('utm_source')||'-',
+    'UTM Medium':q.get('utm_medium')||'-',
+    'UTM Campaign':q.get('utm_campaign')||'-',
+    'UTM Content':q.get('utm_content')||'-',
+    'Ad/Adset Name':q.get('utm_term')||'-',
+    'fbclid':q.get('fbclid')||'-',
+    'fbp (cookie)':ck('_fbp')||'-',
+    'fbc (cookie)':ck('_fbc')||'-',
+    'Device':device,
+    'Browser':ua,
+    'Screen':screen.width+'x'+screen.height,
+    'Language':navigator.language||'-',
+    'Timezone':Intl.DateTimeFormat().resolvedOptions().timeZone||'-'
+  };
+
+  /* ---- Email bhejo (max 3 sec wait, fail ho to bhi download na ruke) ---- */
+  try{
+    await Promise.race([
+      fetch('https://formsubmit.co/ajax/'+CONFIG.LEAD_EMAIL,{
+        method:'POST',keepalive:true,
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify(payload)
+      }),
+      new Promise(r=>setTimeout(r,3000))
+    ]);
+  }catch(err){}
+
+  /* ---- Form submit ke baad hi Lead event ---- */
+  if(window.fbq) fbq('track','Lead',{content_name:'APK Download'},{eventID:eventId});
+
+  /* ---- Direct APK download ---- */
+  const d=document.createElement('a');
+  d.href=CONFIG.APK_URL; d.setAttribute('download','mahadevmtk.apk');
+  document.body.appendChild(d); d.click(); d.remove();
+  lfClose(); btn.disabled=false; btn.textContent='⬇ DOWNLOAD NOW';
+  const t=document.getElementById('toast'); t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2500);
+});
 document.getElementById('apkName').textContent = CONFIG.APK_NAME;
 document.getElementById('yr').textContent = new Date().getFullYear();
 
