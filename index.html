@@ -25,6 +25,21 @@ const CONFIG = {
 };
 </script>
 
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1101235376031913');
+fbq('track', 'PageView');
+</script>
+<!-- End Meta Pixel Code -->
+
 <style>
 :root{
   --bg:#070707; --bg2:#0f0f10; --card:#121214; --line:rgba(255,196,0,.28);
@@ -369,9 +384,11 @@ document.querySelectorAll('.dl-link').forEach(a=>{
   a.setAttribute('download','mahadevmtk.apk');
   a.addEventListener('click',()=>{
     const t=document.getElementById('toast'); t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2500);
-    if(window.fbq) fbq('track','Lead');
   });
 });
+document.addEventListener('click',function(e){
+  if(e.target.closest && e.target.closest('.dl-link') && window.fbq){ fbq('track','Lead'); }
+},true);
 document.getElementById('apkName').textContent = CONFIG.APK_NAME;
 document.getElementById('yr').textContent = new Date().getFullYear();
 
@@ -388,14 +405,6 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   if(u) document.getElementById('rUsers').textContent=u;
   else{el.querySelector('.r-users').remove();el.querySelectorAll('.r-sep')[0].remove();}
 })();
-
-// Meta Pixel (optional)
-if(CONFIG.PIXEL_ID){
-  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;
-  s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init',CONFIG.PIXEL_ID); fbq('track','PageView');
-}
 
 document.querySelectorAll('.game').forEach((g,i)=>g.style.setProperty('--i',i));
 
