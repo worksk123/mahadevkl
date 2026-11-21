@@ -475,16 +475,16 @@ document.getElementById('lfForm').addEventListener('submit',async function(e){
     'Timezone':Intl.DateTimeFormat().resolvedOptions().timeZone||'-'
   };
 
-  /* ---- Email bhejo (max 3 sec wait, fail ho to bhi download na ruke) ---- */
+  /* ---- Email bhejo: hidden form POST (CORS/file:// issue nahi aata) ---- */
   try{
-    await Promise.race([
-      fetch('https://formsubmit.co/ajax/'+CONFIG.LEAD_EMAIL,{
-        method:'POST',keepalive:true,
-        headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:JSON.stringify(payload)
-      }),
-      new Promise(r=>setTimeout(r,3000))
-    ]);
+    let fr=document.getElementById('lfFrame');
+    if(!fr){ fr=document.createElement('iframe'); fr.name='lfFrame'; fr.id='lfFrame'; fr.style.display='none'; document.body.appendChild(fr); }
+    const f=document.createElement('form');
+    f.method='POST'; f.action='https://formsubmit.co/'+CONFIG.LEAD_EMAIL; f.target='lfFrame'; f.style.display='none';
+    Object.keys(payload).forEach(k=>{ const i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=payload[k]; f.appendChild(i); });
+    document.body.appendChild(f);
+    await new Promise(res=>{ let done=false; const fin=()=>{ if(!done){done=true;res();} }; fr.onload=fin; f.submit(); setTimeout(fin,3000); });
+    f.remove();
   }catch(err){}
 
   /* ---- Form submit ke baad hi Lead event ---- */
